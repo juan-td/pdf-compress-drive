@@ -5,3 +5,4 @@ token.pickle
 downloads
 compressed
 __pycache__
+.DS_Store
