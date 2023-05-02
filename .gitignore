@@ -2,7 +2,7 @@ credentials.json
 token.pickle
 .vscode
 .env
-downloads
-compressed
+downloads/*
+compressed/*
 __pycache__
 .DS_Store
