@@ -2,6 +2,7 @@ credentials.json
 token.pickle
 .vscode
 .env
+compressed_ids.txt
 downloads/*
 compressed/*
 __pycache__

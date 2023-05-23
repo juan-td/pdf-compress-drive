@@ -31,13 +31,22 @@ def get_drive_service():
             pickle.dump(creds, token)
     return build("drive", "v3", credentials=creds)
 
-def list_files(drive_service,page_size=1000,fields="nextPageToken, files(id, name, size, mimeType)",q=None,order_by='quotaBytesUsed desc'):
+
+def list_files(
+    drive_service,
+    page_size=1000,
+    fields="nextPageToken, files(id, name, size, mimeType, owners)",
+    q=None,
+    order_by="quotaBytesUsed desc",
+    pageToken=None,
+):
     """
     Returns a list of files including their id, name, size, and mimeType from Google drive, sorted by size
     """
     results = (
         drive_service.files()
         .list(
+            pageToken=pageToken,
             pageSize=page_size,
             fields=fields,
             q=q,
@@ -45,7 +54,8 @@ def list_files(drive_service,page_size=1000,fields="nextPageToken, files(id, nam
         )
         .execute()
     )
-    return results.get("files", [])
+    return results.get("files", []), results.get("nextPageToken")
+
 
 def download_file(drive_service, file_id, file_name):
     """
@@ -64,8 +74,11 @@ def download_file(drive_service, file_id, file_name):
 
 def upload_file(drive_service, file_id, file_name, mime_type):
     media = MediaFileUpload(file_name, mimetype=mime_type)
-    file = drive_service.files().update(fileId=file_id, media_body=media, fields="id").execute()
-
+    file = (
+        drive_service.files()
+        .update(fileId=file_id, media_body=media, fields="id")
+        .execute()
+    )
 
 
 if __name__ == "__main__":
@@ -81,15 +94,17 @@ if __name__ == "__main__":
         )
         .execute()
     )
-    
-    items = list_files(drive_service,q="mimeType='text/plain'")
+
+    items = list_files(drive_service, q="mimeType='text/plain'")
 
     for i in items:
-        if i['name'] == 'test_file.txt':
+        if i["name"] == "test_file.txt":
             file_info = i
-            download_file(drive_service,i['id'],i['name'])
-    
-    with open(file_info['name'],'a') as f:
-        f.write('\nand I appended this from python! Awesome!')
-    
-    upload_file(drive_service,file_info['id'],file_info['name'],file_info['mimeType'])
+            download_file(drive_service, i["id"], i["name"])
+
+    with open(file_info["name"], "a") as f:
+        f.write("\nand I appended this from python! Awesome!")
+
+    upload_file(
+        drive_service, file_info["id"], file_info["name"], file_info["mimeType"]
+    )
